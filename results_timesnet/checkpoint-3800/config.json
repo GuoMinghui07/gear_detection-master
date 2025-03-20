@@ -1,0 +1,19 @@
+{
+  "architectures": [
+    "TimesNetForTimeSeriesClassification"
+  ],
+  "d_ff": 128,
+  "d_model": 64,
+  "dropout": 0.05,
+  "e_layers": 4,
+  "embed": "timeF",
+  "enc_in": 6,
+  "freq": "h",
+  "model_type": "timesnet",
+  "num_class": 9,
+  "num_kernels": 3,
+  "seq_len": 1024,
+  "top_k": 2,
+  "torch_dtype": "float32",
+  "transformers_version": "4.26.1"
+}
