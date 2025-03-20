@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pt
+*.bin
+logs_timesnet/
+results_timesnet/
+.vscode/
