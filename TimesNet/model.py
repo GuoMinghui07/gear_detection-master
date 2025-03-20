@@ -10,6 +10,18 @@ from transformers.utils import ModelOutput
 from typing import Optional, Tuple, Union
 from dataclasses import dataclass
 
+# This implementation is part of my undergraduate graduation project.
+# Some parts of the architecture and implementation are **adapted** from the following works:
+# 
+# - TimesNet: Temporal 2D-Variation Modeling for General Time Series Analysis 
+#   https://doi.org/10.48550/arXiv.2210.02186
+# 
+# - Deep Time Series Models: A Comprehensive Survey and Benchmark 
+#   https://doi.org/10.48550/arXiv.2407.13278
+# 
+# The code is **partially based on open-source implementations** provided by the authors of these papers.
+# Relevant components have been modified to support time series classification tasks in the context of this project.
+# This adapted implementation is used solely for academic purposes as part of my graduation thesis. :)
 
 @dataclass
 class TimesNetForTimeSeriesClassificationOutput(ModelOutput):
