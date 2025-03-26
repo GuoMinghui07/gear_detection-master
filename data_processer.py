@@ -3,7 +3,13 @@ import pandas as pd
 import numpy as np
 import torch
 from sklearn.preprocessing import StandardScaler
-from datasets import Dataset, DatasetDict, load_metric
+from datasets import Dataset, DatasetDict
+from evaluate import load
+from scipy.stats import skew, kurtosis
+from scipy.signal import stft
+from tqdm import tqdm
+
+
 
 class TS_Processor:
     """
@@ -73,7 +79,10 @@ class TS_Processor:
         
         for index, file in enumerate(all_files):
             file_path = os.path.join(self.data_path, file)
-            df = pd.read_csv(file_path)
+            if file.endswith('.xls') or file.endswith('.xlsx'):
+                df = pd.read_excel(file_path) 
+            else:
+                df = pd.read_csv(file_path)
             df.columns = df.columns.str.replace(" ", "")
             numeric_col = df.columns.difference(["time"])
             
@@ -149,9 +158,158 @@ def collate_fn(batch):
 
     return {"past_values": past_values, "target_values": target_values} 
 
-metric = load_metric("accuracy")
+metric = load("accuracy")
 
 def compute_metrics(eval_preds):
     logits, labels = eval_preds
     predictions = torch.argmax(torch.tensor(logits), dim=-1).numpy()
     return metric.compute(predictions=predictions, references=labels)
+
+
+
+class TS_FeatureProcessor(TS_Processor):
+    """
+    用于给传统机器学习算法（如SVM）的数据处理, 最终返回每个序列片段的特征数组集合.
+    """
+
+    def __init__(
+        self,
+        sequence_length=512,
+        stride=32,
+        train_ratio=0.7,
+        val_ratio=0.1,
+        remove_extreme_values=False,
+        iqr_threshold=7.0,
+        fs=100.0
+    ):
+        """
+        增加一个 fs (采样率) 参数，用于 STFT.
+        """
+        super().__init__(
+            sequence_length=sequence_length,
+            stride=stride,
+            train_ratio=train_ratio,
+            val_ratio=val_ratio,
+            remove_extreme_values=remove_extreme_values,
+            iqr_threshold=iqr_threshold
+        )
+        self.fs = fs  # 用于 stft 的采样率
+    
+    def extract_time_features(self, window_2d: np.ndarray) -> np.ndarray:
+        """
+        对一个窗口的 2D 数据 (shape: [seq_len, d]) 求时域统计特征.
+        这里采集[均值, 标准差, 偏度, 峰度, 峰峰值]，可调整.
+        最终特征拼接.
+        """
+        features = []
+        d = window_2d.shape[1]
+        
+        for col in range(d):
+            col_data = window_2d[:, col]
+            mean_ = np.mean(col_data)
+            std_ = np.std(col_data)
+        #    skew_ = skew(col_data)
+        #    kurt_ = kurtosis(col_data)
+            ptp_ = np.ptp(col_data)  # peak-to-peak
+        #    features.extend([mean_, std_, skew_, kurt_, ptp_])
+            features.extend([mean_, std_, ptp_])
+        
+        return np.array(features, dtype=np.float32)
+    
+    # 由于硬件限制，STFT速度较慢，这里采用FFT
+
+    # def extract_freq_features(self, window_2d: np.ndarray) -> np.ndarray:
+    #     """
+    #     这里对一个窗口的 2D 数据做 STFT，提取简单的频域特征，比如:
+    #     - 总能量
+    #     - 最大能量点
+    #     """
+    #     features = []
+    #     d = window_2d.shape[1]
+        
+    #     for col in range(d):
+    #         col_data = window_2d[:, col]
+    #         # 做 STFT
+    #         f, t, Zxx = stft(col_data, fs=self.fs, nperseg=64, noverlap=32)
+    #         power_spectrogram = np.abs(Zxx)**2  # shape: (freq_bins, time_frames)
+            
+    #         total_energy = power_spectrogram.sum()
+    #         peak_value = power_spectrogram.max()
+            
+    #         features.extend([total_energy, peak_value])
+
+    #     return np.array(features, dtype=np.float32)
+
+    def extract_freq_features(self, window_2d):
+        d = window_2d.shape[1]
+        features = []
+        for col in range(d):
+            col_data = window_2d[:, col]
+            fft_result = np.fft.rfft(col_data)
+            power = np.abs(fft_result) ** 2
+            total_energy = power.sum()
+            peak_value = power.max()
+            features.extend([total_energy, peak_value])
+        return np.array(features, dtype=np.float32)
+        
+    
+    def extract_features(self, window_2d: np.ndarray) -> np.ndarray:
+        time_feats = self.extract_time_features(window_2d)
+        freq_feats = self.extract_freq_features(window_2d)
+        return np.concatenate([time_feats, freq_feats], axis=0)
+    #    return time_feats
+    
+    def sliding_window_split(self, df: pd.DataFrame, label: int):
+        X_list, y_list = [], []
+        data_array = df[self.numeric_cols].values 
+        n_samples = len(data_array)
+        
+        for start_idx in range(0, n_samples - self.sequence_length + 1, self.stride):
+            window_2d = data_array[start_idx : start_idx + self.sequence_length]  
+            feats = self.extract_features(window_2d)
+            X_list.append(feats)
+            y_list.append(label)
+        
+        return X_list, y_list
+
+    def process_dataset(self):
+        train_list, val_list, test_list = self.load_and_split_data()
+        train_list, val_list, test_list = self.normalize_data(train_list, val_list, test_list)
+
+        if self.enable_remove_extreme_values and self.removed_outliers:
+            print("Detected and removed outliers:")
+            for file_name, index, data in self.removed_outliers:
+                print(f"File: {file_name}, Index: {index}, Data: {data}")
+        
+        X_train_all, y_train_all = [], []
+        X_val_all, y_val_all = [], []
+        X_test_all, y_test_all = [], []
+
+        for label_idx, (df_train, df_val, df_test) in tqdm(
+            enumerate(zip(train_list, val_list, test_list)), 
+            total=len(train_list), desc="Processing data"
+        ):
+            X_tr, y_tr = self.sliding_window_split(df_train, label_idx)
+            X_train_all.extend(X_tr)
+            y_train_all.extend(y_tr)
+
+            X_v, y_v = self.sliding_window_split(df_val, label_idx)
+            X_val_all.extend(X_v)
+            y_val_all.extend(y_v)
+
+            X_te, y_te = self.sliding_window_split(df_test, label_idx)
+            X_test_all.extend(X_te)
+            y_test_all.extend(y_te)
+
+        X_train = np.array(X_train_all)
+        y_train = np.array(y_train_all)
+        X_val = np.array(X_val_all)
+        y_val = np.array(y_val_all)
+        X_test = np.array(X_test_all)
+        y_test = np.array(y_test_all)
+        
+        return {
+            "train": (X_train, y_train),
+            "validation": (X_val, y_val),
+            "test": (X_test, y_test),
+        }

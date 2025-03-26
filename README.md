@@ -1,6 +1,6 @@
 # Gear Fault Classification using Time Series Models
 
-本项目为本人在北京交通大学机械电子工程专业的本科毕业设计，旨在利用时间序列深度学习 SOTA 模型对弧齿锥齿轮进行多维度分类检测。项目通过对采集的多维时间序列信号进行建模，探索深度学习在机械故障诊断中的应用，实现齿轮故障的自动识别与分类。实验中选取了 **TimesNet**、**PatchMixer** 和 **PatchTST** 三种先进模型，进行性能对比与评估，验证其在工业场景下的实用性和优越性。😊😊😊
+本项目为本人在北京交通大学机械电子工程专业的本科毕业设计，旨在利用时间序列深度学习 SOTA 模型对弧齿锥齿轮进行多维度分类检测。项目通过对采集的多维时间序列信号进行建模，探索深度学习在机械故障诊断中的应用，实现齿轮故障的自动识别与分类。实验中选取了 **TimesNet**、**PatchMixer** 和 **PatchTST** 三种先进模型，以及传统特征提取+SVM分类的方法进行性能对比与评估，验证其在工业场景下的实用性和优越性。😊😊😊
 
 ---
 
@@ -69,6 +69,7 @@ pip install -r requirements.txt
 ├── patchtst_3class.ipynb           # PatchTST 3分类实验 notebook
 ├── patchtst_9class.ipynb           # PatchTST 9分类实验 notebook
 ├── timesnet_9class.ipynb           # TimesNet 9分类实验 notebook
+├── SVM_9class.ipynb                # SVM 9分类实验 notebook
 │
 └── requirements.txt                # 依赖库列表
 ```
@@ -91,9 +92,9 @@ pip install -r requirements.txt
    - `timesnet_9class.ipynb`
 
 3. **查看结果**  
-   - 实验结果保存在 `results_*/` 文件夹中：
-     - [📄 PatchMixer 结果展示](./plot/patchmixer_result.pdf)
-     - [📄 PatchTST 结果展示](./plot/patchtst_result.pdf)
-     - [📄 TimesNet 结果展示](./plot/timesnet_result.pdf)
+   实验结果保存在 `results_*/` 文件夹中：
+   - [📄 PatchMixer 结果展示](./plot/patchmixer_result.pdf)
+   - [📄 PatchTST 结果展示](./plot/patchtst_result.pdf)
+   - [📄 TimesNet 结果展示](./plot/timesnet_result.pdf)
 
 ---
