@@ -53,23 +53,25 @@ pip install -r requirements.txt
 │
 ├── plot/                           # Loss, Acc曲线
 │
-├── results_20nm(3class)/          # 3分类实验结果（PatchTST的一个小demo~）
-├── results_patchmixer/            # PatchMixer 结果
-├── results_patchtst/              # PatchTST 结果
-├── results_timesnet/              # TimesNet 实验结果
+├── results_20nm(3class)/           # 3分类实验结果（PatchTST的一个小demo~）
+├── results_patchmixer/             # PatchMixer 结果
+├── results_patchtst/               # PatchTST 结果
+├── results_timesnet/               # TimesNet 实验结果
 │
 ├── .gitignore                      # Git 忽略配置
 ├── LICENSE                         # 开源协议
 ├── README.md                       # 项目说明文档
 │
-├── data_processer.py               # 数据预处理脚本
-├── plot_results.py                 # 结果绘图脚本
+├── utils/                          # 工具
+    └── data_processer.py           # 数据预处理脚本
+    └── plot_results.py             # 结果绘图脚本
 │
-├── patchmixer_9class.ipynb         # PatchMixer 9分类实验 notebook
-├── patchtst_3class.ipynb           # PatchTST 3分类实验 notebook
-├── patchtst_9class.ipynb           # PatchTST 9分类实验 notebook
-├── timesnet_9class.ipynb           # TimesNet 9分类实验 notebook
-├── SVM_9class.ipynb                # SVM 9分类实验 notebook
+├── experiments/                    # 5个实验
+    └── patchmixer_9class.ipynb     # PatchMixer 9分类实验 notebook
+    └── patchtst_3class.ipynb       # PatchTST 3分类实验 notebook
+    └── patchtst_9class.ipynb       # PatchTST 9分类实验 notebook
+    └── timesnet_9class.ipynb       # TimesNet 9分类实验 notebook
+    └── SVM_9class.ipynb            # SVM 9分类实验 notebook
 │
 └── requirements.txt                # 依赖库列表
 ```
