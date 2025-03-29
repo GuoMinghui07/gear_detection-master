@@ -73,6 +73,12 @@ pip install -r requirements.txt
     └── timesnet_9class.ipynb       # TimesNet 9分类实验 notebook
     └── SVM_9class.ipynb            # SVM 9分类实验 notebook
 │
+├── confusion_matrix/               # 混淆矩阵
+    └── cm_patchtst.pdf
+    └── cm_patchmixer.pdf
+    └── cm_timesnet.pdf
+    └── cm_SVM.pdf
+│
 └── requirements.txt                # 依赖库列表
 ```
 
