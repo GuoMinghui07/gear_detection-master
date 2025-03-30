@@ -3,6 +3,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import numpy as np
 
 def plot_training_results(checkpoint_path, save_plot=False, plot_name=None):
     """
@@ -99,4 +101,67 @@ def plot_training_results(checkpoint_path, save_plot=False, plot_name=None):
         plt.savefig(save_path, dpi=300)
         print(f"Plot saved to {save_path}")
 
+    plt.show()
+
+
+
+def plot_confusion_matrix(
+    trainer, 
+    dataset, 
+    label_names=None, 
+    normalize=None, 
+    cmap=plt.cm.Blues, 
+    save_name=None
+):
+    """
+    常用颜色风格（cmap）包括：
+    - plt.cm.Blues       蓝色（默认）
+    - plt.cm.Greens      绿色
+    - plt.cm.Oranges     橙色
+    - plt.cm.Reds        红色
+    - plt.cm.Purples     紫色
+    - plt.cm.Greys       灰度
+    - plt.cm.cividis     现代感配色
+    - plt.cm.plasma      炫彩感配色
+    - plt.cm.inferno     深红-黄
+    """
+
+    label_mapping = {
+        0: 5, 1: 2, 2: 3, 3: 8, 4: 0, 5: 7, 6: 4, 7: 1, 8: 6
+    }
+
+    def map_label(example):
+        example["label"] = label_mapping[example["label"]]
+        return example
+
+    revised_dataset = dataset.map(map_label)
+
+    if label_names is None:
+        inverse_mapping = {v: k for k, v in label_mapping.items()}
+        label_names = [str(inverse_mapping[i]) for i in range(len(inverse_mapping))]
+
+    if save_name != None:
+        save_dir = "./confusion_matrix"
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, save_name if save_name.endswith(".pdf") else save_name + ".pdf")
+
+    predictions = trainer.predict(revised_dataset)
+    y_true = predictions.label_ids
+    y_pred = np.argmax(predictions.predictions, axis=1)
+
+    cm = confusion_matrix(y_true, y_pred, normalize=normalize)
+    
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_names)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    disp.plot(cmap=cmap, ax=ax, values_format=".2f" if normalize else "d")
+
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.grid(False)
+    plt.tight_layout()
+
+    if save_name != None:
+        plt.savefig(save_path, format="pdf")
+        print(f"混淆矩阵已保存到: {save_path}")
+    
     plt.show()
