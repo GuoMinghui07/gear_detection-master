@@ -75,7 +75,7 @@ class TS_Processor:
     
     def load_and_split_data(self):
         train_list, val_list, test_list = [], [], []
-        all_files = os.listdir(self.data_path)
+        all_files = sorted(os.listdir(self.data_path))
         
         for index, file in enumerate(all_files):
             file_path = os.path.join(self.data_path, file)

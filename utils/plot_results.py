@@ -93,7 +93,7 @@ def plot_training_results(checkpoint_path, save_plot=False, plot_name=None):
     plt.tight_layout()
 
     if save_plot:
-        os.makedirs('./plot', exist_ok=True)
+        os.makedirs('../plot', exist_ok=True)
         if plot_name is None:
             checkpoint_folder = os.path.basename(os.path.normpath(checkpoint_path))
             plot_name = f"{checkpoint_folder}_plot"
@@ -125,23 +125,9 @@ def plot_confusion_matrix(
     - plt.cm.plasma      炫彩感配色
     - plt.cm.inferno     深红-黄
     """
-
-    label_mapping = {
-        0: 5, 1: 2, 2: 3, 3: 8, 4: 0, 5: 7, 6: 4, 7: 1, 8: 6
-    }
-
-    def map_label(example):
-        example["label"] = label_mapping[example["label"]]
-        return example
-
-    revised_dataset = dataset.map(map_label)
-
-    if label_names is None:
-        inverse_mapping = {v: k for k, v in label_mapping.items()}
-        label_names = [str(inverse_mapping[i]) for i in range(len(inverse_mapping))]
-
+    
     if save_name != None:
-        save_dir = "./confusion_matrix"
+        save_dir = "../confusion_matrix"
         os.makedirs(save_dir, exist_ok=True)
         save_path = os.path.join(save_dir, save_name if save_name.endswith(".pdf") else save_name + ".pdf")
 
