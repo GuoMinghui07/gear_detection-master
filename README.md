@@ -12,11 +12,11 @@
 
 - **PatchMixer**  
   PatchMixer 利用 Patch 分块与特征混合策略，在时间序列分类任务中展现出优越的性能，尤其适合多变量时间序列的高效建模。  
-  📄 论文链接：[PatchMixer: A Patch-Mixing Architecture for Time-Series Classification](https://arxiv.org/abs/2305.01740)
+  📄 论文链接：[PatchMixer: A Patch-Mixing Architecture for Long-Term Time Series Forecasting](https://arxiv.org/abs/2310.00655)
 
 - **PatchTST**  
   PatchTST 是一种基于 Patch 的时间序列 Transformer 模型，能够有效提升时间序列预测和分类任务的泛化能力。  
-  📄 论文链接：[PatchTST: Contextualizing Time-Series Data with Patch Attention](https://arxiv.org/abs/2211.14730)
+  📄 论文链接：[A Time Series is Worth 64 Words: Long-term Forecasting with Transformers](https://arxiv.org/abs/2211.14730)
 
 ---
 
